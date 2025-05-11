@@ -16,7 +16,7 @@ const EmployeeLogin = ({ setUser }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/employee-login', {
+      const res = await axios.post('https://attendance-app-xtnq.onrender.com/auth/employee-login', {
         empid,
         password,
       });
