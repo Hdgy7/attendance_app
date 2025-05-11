@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  parseISO,
+  getMonth,
+  getYear,
+  format,
+  startOfWeek,
+  differenceInCalendarDays
+} from 'date-fns';
 
 const EmployeeDashboard = () => {
   const [employee, setEmployee] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalOvertime, setTotalOvertime] = useState(0);  // For total overtime hours in the month
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedWeek, setSelectedWeek] = useState('all');
 
-  // Get empid from localStorage
   const empid = localStorage.getItem('employeeId');
-  console.log(empid);
+  const currentYear = new Date().getFullYear();
+
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];  // Returns date in YYYY-MM-DD format
+    const date = parseISO(dateString);
+    return format(date, 'yyyy-MM-dd');
   };
 
   useEffect(() => {
@@ -25,15 +34,8 @@ const EmployeeDashboard = () => {
 
       try {
         const res = await axios.get(`https://attendance-app-xtnq.onrender.com/api/employee/by-email/${empid}`);
-        const employeeData = res.data.employee;
-        setEmployee(employeeData);
-
-        // Set attendance from the response
+        setEmployee(res.data.employee);
         setAttendance(res.data.attendance || []);
-
-        // Calculate total overtime hours
-        const overtimeHours = res.data.attendance.reduce((acc, record) => acc + parseFloat(record.overtime_hrs || 0), 0);
-        setTotalOvertime(overtimeHours);
       } catch (err) {
         console.error('Error fetching employee or attendance:', err);
       } finally {
@@ -44,13 +46,29 @@ const EmployeeDashboard = () => {
     fetchEmployeeAndAttendance();
   }, [empid]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  const getFilteredAttendance = () => {
+    return attendance.filter(record => {
+      const date = parseISO(record.date);
+      const recordMonth = getMonth(date);
+      const recordYear = getYear(date);
+      const selectedMonthInt = Number(selectedMonth);
 
-  if (!employee) {
-    return <p>Employee not found or not logged in.</p>;
-  }
+      if (recordMonth !== selectedMonthInt || recordYear !== currentYear) return false;
+      if (selectedWeek === 'all') return true;
+
+      const weekStart = startOfWeek(new Date(currentYear, selectedMonthInt, 1), { weekStartsOn: 1 });
+      const daysDiff = differenceInCalendarDays(date, weekStart);
+      const recordWeek = Math.floor(daysDiff / 7) + 1;
+
+      return recordWeek === parseInt(selectedWeek);
+    });
+  };
+
+  const filteredAttendance = getFilteredAttendance();
+  const totalOvertime = filteredAttendance.reduce((acc, record) => acc + parseFloat(record.overtime_hrs || 0), 0);
+
+  if (loading) return <p>Loading...</p>;
+  if (!employee) return <p>Employee not found or not logged in.</p>;
 
   return (
     <div className="dashboard-container">
@@ -60,20 +78,43 @@ const EmployeeDashboard = () => {
         <p><strong>Email:</strong> {employee.email}</p>
       </div>
 
+      <div className="filter-controls">
+        <label>
+          Month:
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option value={i} key={i}>
+                {new Date(0, i).toLocaleString('default', { month: 'long' })}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Week:
+          <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)}>
+            <option value="all">All</option>
+            <option value="1">Week 1</option>
+            <option value="2">Week 2</option>
+            <option value="3">Week 3</option>
+            <option value="4">Week 4</option>
+            <option value="5">Week 5</option>
+          </select>
+        </label>
+      </div>
+
       <div className="attendance-summary">
-        <h3>Attendance Summary for the Current Month</h3>
         <div className="summary-card">
           <h4>Total Working Days:</h4>
-          <p>{attendance.length}</p>
+          <p>{filteredAttendance.length}</p>
         </div>
         <div className="summary-card">
-          <h4>Total Overtime Hours This Month:</h4>
+          <h4>Total Overtime Hours:</h4>
           <p>{totalOvertime} hrs</p>
         </div>
       </div>
 
       <h3>Attendance Report</h3>
-      {attendance && attendance.length > 0 ? (
+      {filteredAttendance.length > 0 ? (
         <table>
           <thead>
             <tr>
@@ -85,7 +126,7 @@ const EmployeeDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {attendance.map((record) => (
+            {filteredAttendance.map((record) => (
               <tr key={record.id}>
                 <td>{formatDate(record.date)}</td>
                 <td>{record.in_time}</td>
@@ -97,12 +138,10 @@ const EmployeeDashboard = () => {
           </tbody>
         </table>
       ) : (
-        <p>No attendance records found.</p>
+        <p>No attendance records found for selected filter.</p>
       )}
-      
-      {/* Internal CSS with Media Queries for mobile responsiveness */}
+
       <style jsx>{`
-        /* Dashboard container */
         .dashboard-container {
           font-family: 'Arial', sans-serif;
           background-color: #f4f7fa;
@@ -113,7 +152,6 @@ const EmployeeDashboard = () => {
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header styling */
         h2 {
           text-align: center;
           color: #4e73df;
@@ -129,7 +167,32 @@ const EmployeeDashboard = () => {
           color: #555;
         }
 
-        /* Summary section */
+        .filter-controls {
+          display: flex;
+          justify-content: center;
+          gap: 15px;
+          margin-bottom: 20px;
+          background-color: #ffffff;
+          padding: 10px;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-controls label {
+          font-size: 14px;
+          color: #333;
+          font-weight: bold;
+        }
+
+        .filter-controls select {
+          font-size: 14px;
+          padding: 5px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background-color: #f7f7f7;
+          width: 120px;
+        }
+
         .attendance-summary {
           display: flex;
           justify-content: space-between;
@@ -157,7 +220,6 @@ const EmployeeDashboard = () => {
           font-weight: bold;
         }
 
-        /* Attendance table */
         table {
           width: 100%;
           border-collapse: collapse;
@@ -187,7 +249,6 @@ const EmployeeDashboard = () => {
           color: #555;
         }
 
-        /* General styling */
         h3 {
           font-size: 22px;
           color: #333;
@@ -199,7 +260,6 @@ const EmployeeDashboard = () => {
           color: #555;
         }
 
-        /* upps */
         @media (max-width: 768px) {
           .attendance-summary {
             flex-direction: column;
@@ -256,6 +316,11 @@ const EmployeeDashboard = () => {
 
           h3 {
             font-size: 18px;
+          }
+
+          .filter-controls {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
       `}</style>
