@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a base axios instance with your API base URL
 const instance = axios.create({
-  baseURL: 'http://localhost:5000/api', // Your backend URL
+  baseURL: 'https://attendance-app-xtnq.onrender.com/', // Your backend URL
   withCredentials: true, // Make sure credentials (cookies) are sent along with requests
 });
 
