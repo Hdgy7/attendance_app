@@ -14,7 +14,7 @@ const Login = ({ setUser }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://attendance-app-xtnq.onrender.com/auth/login', {
+      const response = await axios.post('https://attendance-app-xtnq.onrender.com/api/auth/login', {
         email,
         password,
       });
