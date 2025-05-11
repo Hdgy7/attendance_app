@@ -16,7 +16,7 @@ app.use(express.json());
 
 // CORS Configuration (withCredentials for frontend session support)
 app.use(cors({
-  origin: 'http://localhost:3000', // Replace with your frontend's URL
+  origin: 'https://attendance-management-eosin.vercel.app/', // Replace with your frontend's URL
   credentials: true
 }));
 
