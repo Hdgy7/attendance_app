@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
-import { format } from 'date-fns';
+import { format, parseISO, isSameMonth, isSameWeek } from 'date-fns';
+
 function AttendanceReport() {
   const [attendanceData, setAttendanceData] = useState([]);
-  const navigate = useNavigate(); // For navigation
+  const [filterType, setFilterType] = useState('monthly'); // 'monthly' or 'weekly'
+  const [selectedDate, setSelectedDate] = useState(''); // yyyy-MM
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -21,15 +24,42 @@ function AttendanceReport() {
   }, []);
 
   const handleBack = () => {
-    navigate('/dashboard'); // Navigate to Dashboard.js
+    navigate('/dashboard');
   };
+
+  // Filtered attendance based on selectedDate & filterType
+  const filteredAttendance = attendanceData.filter((row) => {
+    if (!selectedDate) return true;
+    const date = parseISO(row.date);
+    const selected = new Date(selectedDate);
+
+    if (filterType === 'monthly') {
+      return isSameMonth(date, selected);
+    } else if (filterType === 'weekly') {
+      return isSameWeek(date, selected, { weekStartsOn: 1 }); // week starts on Monday
+    }
+    return true;
+  });
 
   return (
     <div className="attendance-container">
       <button onClick={handleBack} className="back-button">← Back to Dashboard</button>
       <h2>Attendance Report</h2>
 
-      <h3>All Employee Attendance</h3>
+      {/* Filter Controls */}
+      <div className="filter-controls">
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+        <input
+          type={filterType === 'monthly' ? 'month' : 'date'}
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+        />
+      </div>
+
+      <h3>Filtered Employee Attendance</h3>
       <table>
         <thead>
           <tr>
@@ -43,12 +73,12 @@ function AttendanceReport() {
           </tr>
         </thead>
         <tbody>
-          {attendanceData.map((row, index) => (
+          {filteredAttendance.map((row, index) => (
             <tr key={index}>
               <td>{row.emp_id}</td>
               <td>{row.name}</td>
-              <td>{format(new Date(row.date), 'yyyy-MM-dd')}</td> {/* Format the date here */}
-                              <td>{row.in_time}</td>
+              <td>{format(new Date(row.date), 'yyyy-MM-dd')}</td>
+              <td>{row.in_time}</td>
               <td>{row.out_time}</td>
               <td>{row.code}</td>
               <td>{row.overtime_hrs}</td>
@@ -80,8 +110,19 @@ function AttendanceReport() {
             font-size: 1rem;
           }
 
-          .back-button:hover {
-            background-color: #2e59d9;
+          .filter-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+          }
+
+          .filter-controls select,
+          .filter-controls input {
+            padding: 8px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
           }
 
           h2 {
@@ -144,6 +185,11 @@ function AttendanceReport() {
             .back-button {
               font-size: 0.9rem;
               padding: 6px 12px;
+            }
+
+            .filter-controls {
+              flex-direction: column;
+              align-items: center;
             }
           }
         `}
