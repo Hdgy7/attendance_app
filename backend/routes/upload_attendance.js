@@ -19,10 +19,10 @@ const upload = multer({ storage });
 
 // MySQL connection
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'rdbms', // update if needed
-  database: 'attendance_management' // replace with your DB
+  host: 'sql12.freesqldatabase.com',
+  user: 'sql12778224',
+  password: '8Y47NaPdiD', // update if needed
+  database: 'sql12778224' // replace with your DB
 });
 
 // Upload route
