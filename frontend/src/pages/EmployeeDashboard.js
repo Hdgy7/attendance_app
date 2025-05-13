@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
 import axios from 'axios';
 import {
   parseISO,
@@ -10,13 +9,6 @@ import {
   differenceInCalendarDays
 } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-const navigate = useNavigate();
-
-const handleLogout = () => {
-  localStorage.removeItem('employeeId');
-  navigate('/employee-login'); // Change this route based on your actual login page
-};
-
 
 const EmployeeDashboard = () => {
   const [employee, setEmployee] = useState(null);
@@ -25,6 +17,7 @@ const EmployeeDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedWeek, setSelectedWeek] = useState('all');
 
+  const navigate = useNavigate();
   const empid = localStorage.getItem('employeeId');
   const currentYear = new Date().getFullYear();
 
@@ -55,6 +48,11 @@ const EmployeeDashboard = () => {
     fetchEmployeeAndAttendance();
   }, [empid]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('employeeId');
+    navigate('/employee-login'); // Change this route as per your routing
+  };
+
   const getFilteredAttendance = () => {
     return attendance.filter(record => {
       const date = parseISO(record.date);
@@ -81,10 +79,10 @@ const EmployeeDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <h2>Welcome, {employee.name}</h2>
       <div style={{ textAlign: 'right' }}>
-  <button onClick={handleLogout} className="logout-button">Logout</button>
-</div>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
+      </div>
+      <h2>Welcome, {employee.name}</h2>
 
       <div className="employee-details">
         <p><strong>Employee ID:</strong> {employee.emp_id}</p>
@@ -164,25 +162,25 @@ const EmployeeDashboard = () => {
           margin: 0 auto;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .logout-button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-.logout-button:hover {
-  background-color: #c0392b;
-}
-
 
         h2 {
           text-align: center;
           color: #4e73df;
+        }
+
+        .logout-button {
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          padding: 8px 14px;
+          border-radius: 5px;
+          font-size: 14px;
+          cursor: pointer;
+          margin-bottom: 10px;
+        }
+
+        .logout-button:hover {
+          background-color: #c0392b;
         }
 
         .employee-details {
