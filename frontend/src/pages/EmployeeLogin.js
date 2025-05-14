@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaEye, FaEyeSlash } from 'react-icons/fa'; // For password visibility toggle
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const EmployeeLogin = ({ setUser }) => {
   const [empid, setEmpid] = useState('');
@@ -22,10 +22,8 @@ const EmployeeLogin = ({ setUser }) => {
       });
 
       if (res.data.token) {
-        localStorage.setItem('employeeId',empid); // Store empid in localStorage
+        localStorage.setItem('employeeId', empid);
         setUser(res.data.user);
-        const emp_id = localStorage.getItem('employeeId');
-        console.log(emp_id);
         navigate('/employee-dashboard');
       }
     } catch (err) {
@@ -72,9 +70,12 @@ const EmployeeLogin = ({ setUser }) => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        <div className="designed-by">
+          This app is designed by <strong>Harish G</strong>, <strong>Swaroop S Rao</strong>, and <strong>Swetha M</strong><br />
+          of <strong>Thiagarajar College Of Engineering</strong>
+        </div>
       </div>
 
-      {/* Internal CSS styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
@@ -108,11 +109,11 @@ const EmployeeLogin = ({ setUser }) => {
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.2);
           animation: slideUp 0.8s ease-out;
+          text-align: center;
         }
 
         .login-form h2 {
           color: #ffffff;
-          text-align: center;
           font-size: 2.2rem;
           font-weight: 600;
           margin-bottom: 30px;
@@ -206,6 +207,20 @@ const EmployeeLogin = ({ setUser }) => {
           font-size: 0.9rem;
         }
 
+        .designed-by {
+          margin-top: 25px;
+          color: #dcdcdc;
+          font-size: 0.9rem;
+          background: rgba(255, 255, 255, 0.08);
+          padding: 10px;
+          border-radius: 10px;
+          line-height: 1.5;
+        }
+
+        .designed-by strong {
+          color: #ffffff;
+        }
+
         /* Animations */
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -236,6 +251,11 @@ const EmployeeLogin = ({ setUser }) => {
           .login-button {
             padding: 12px;
             font-size: 1rem;
+          }
+
+          .designed-by {
+            font-size: 0.8rem;
+            padding: 8px;
           }
         }
       `}</style>
