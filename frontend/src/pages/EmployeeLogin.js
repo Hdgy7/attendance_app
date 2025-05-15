@@ -56,7 +56,7 @@ const EmployeeLogin = ({ setUser }) => {
           <div className="form-group password-group">
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
+              placeholder="Pin Number"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
