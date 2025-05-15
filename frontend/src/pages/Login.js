@@ -77,6 +77,11 @@ const Login = ({ setUser }) => {
         >
           Go to Employee Login
         </button>
+            <p className="credits">
+  This app is designed by <strong>Harish G</strong>, <strong>Swaroop S Rao</strong>, and <strong>Swetha M</strong><br />
+  of Thiagarajar College Of Engineering
+</p>
+   
       </div>
 
       {/* Internal CSS */}
@@ -106,6 +111,13 @@ const Login = ({ setUser }) => {
           margin-bottom: 20px;
           font-family: 'Roboto', sans-serif;
         }
+        .credits {
+  margin-top: 25px;
+  font-size: 0.85rem;
+  text-align: center;
+  color: #555;
+  line-height: 1.4;
+}
 
         .input-field {
           width: 100%;
